@@ -1,4 +1,4 @@
-from surface.sources.revisions import RevisionRepository
+from surface.sources.revisions import RevisionRepository, STITCHED
 from surface.tasks.plans import PlanService
 from surface.tasks.inputs import resolve_inputs
 from surface.tasks.receipts import ReceiptRepository
@@ -7,6 +7,8 @@ from surface.fields.sampling import sample_queue
 from surface.fields.circulation import all_circulations
 from surface.fields.balances import build_balance
 from surface.results.repository import ResultRepository, ResultPayload
+
+KINDS = {"ordinary": "ordinary-analysis-v1", "stitched": "stitched-analysis-v1"}
 
 
 def compute_analysis(inputs, checkpoint=None):
@@ -17,11 +19,11 @@ def compute_analysis(inputs, checkpoint=None):
     circulations = all_circulations(bundle)
     balance = build_balance(bundle, circulations).to_record()
     return ResultPayload({
-        "kind": "ordinary-analysis-v1",
+        "kind": KINDS[revision.kind],
         "binding": {"plan_id": plan.plan_id, "plan_digest": plan.fingerprint,
                     "revision_id": revision.revision_id,
                     "source_digest": revision.fingerprint, "convention": plan.convention},
-        "input": {"mesh": revision.mesh.to_record(), "fields": revision.fields.to_record()},
+        "input": revision.input_record(),
         "requests": [dict(item) for item in plan.samples],
         "samples": samples, "circulations": circulations,
         "face_totals": dict(bundle.values.face_totals), "balance": balance}).to_record()

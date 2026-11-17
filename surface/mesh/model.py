@@ -24,6 +24,10 @@ class OrdinaryMesh:
     def edges(self):
         return tuple(sorted(self.incidence))
 
+    def source_vertices(self, face):
+        """Vertices in the solver's original corner order."""
+        return self.faces[face]
+
     def to_record(self):
         return {"nodes": dict(self.nodes), "faces": dict(self.faces),
                 "edges": list(self.edges),
